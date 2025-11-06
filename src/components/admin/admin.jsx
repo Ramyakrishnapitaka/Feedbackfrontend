@@ -6,7 +6,7 @@ export default function Admin() {
   const [newReply, setNewReply] = useState("");
   const fetchFeedbacks = async () => {
     try {
-      const res = await fetch("http://localhost:4500/api/data");
+      const res = await fetch("https://feedbackbackend-pfzn.onrender.com/api/data");
       const data = await res.json();
       setFeedbacks(data);
     } catch (err) {
@@ -23,7 +23,7 @@ export default function Admin() {
   };
   const saveReply = async (id) => {
     try {
-      const res = await fetch(`http://localhost:4500/api/data/${id}/reply`, {
+      const res = await fetch(`https://feedbackbackend-pfzn.onrender.com/api/data/${id}/reply`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ reply: newReply }),
@@ -40,7 +40,7 @@ export default function Admin() {
   const deleteFeedback = async (id) => {
     if (!window.confirm("Are you sure you want to delete this feedback?")) return;
     try {
-      const res = await fetch(`http://localhost:4500/api/data/${id}`, {
+      const res = await fetch(`https://feedbackbackend-pfzn.onrender.com/api/data/${id}`, {
         method: "DELETE",
       });
       const data = await res.json();
