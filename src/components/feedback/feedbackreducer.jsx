@@ -9,7 +9,7 @@ export default function Feedback() {
   const [replyId, setReplyId] = useState(null);
   const fetchFeedbacks = async () => {
     try {
-      const res = await fetch("http://localhost:4500/api/data");
+      const res = await fetch("https://feedbackbackend-pfzn.onrender.com/api/data");
       const data = await res.json();
       setFeedbacks(data);
     } catch (err) {
@@ -26,7 +26,7 @@ export default function Feedback() {
 
     try {
       if (editingId) {
-        const res = await fetch(`http://localhost:4500/api/data/${editingId}`, {
+        const res = await fetch(`https://feedbackbackend-pfzn.onrender.com/api/data/${editingId}`, {
           method: "PUT",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ name, feedback: newFeedback, comment: newComment }),
@@ -35,7 +35,7 @@ export default function Feedback() {
         alert(data.message);
         setEditingId(null);
       } else {
-        const res = await fetch("http://localhost:4500/api/data", {
+        const res = await fetch("https://feedbackbackend-pfzn.onrender.com/api/data", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ name, feedback: newFeedback, comment: newComment }),
@@ -54,7 +54,7 @@ export default function Feedback() {
   const handleDelete = async (id) => {
     if (!window.confirm("Delete this feedback?")) return;
     try {
-      const res = await fetch(`http://localhost:4500/api/data/${id}`, { method: "DELETE" });
+      const res = await fetch(`https://feedbackbackend-pfzn.onrender.com/api/data/${id}`, { method: "DELETE" });
       const data = await res.json();
       alert(data.message);
       fetchFeedbacks();
@@ -74,7 +74,7 @@ export default function Feedback() {
   };
   const saveReply = async () => {
     try {
-      const res = await fetch(`http://localhost:4500/api/data/${replyId}/reply`, {
+      const res = await fetch(`https://feedbackbackend-pfzn.onrender.com/api/data/${replyId}/reply`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ reply: newReply }),
