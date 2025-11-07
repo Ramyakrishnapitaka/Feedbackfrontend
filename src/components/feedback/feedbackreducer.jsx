@@ -1,122 +1,72 @@
 import { useEffect, useState } from "react";
+
 export default function Feedback() {
   const [feedbacks, setFeedbacks] = useState([]);
   const [name, setName] = useState("");
-  const [newFeedback, setNewFeedback] = useState("");
-  const [newComment, setNewComment] = useState("");
+  const [feedback, setFeedback] = useState("");
+  const [comment, setComment] = useState("");
   const [editingId, setEditingId] = useState(null);
-  const [newReply, setNewReply] = useState("");
-  const [replyId, setReplyId] = useState(null);
+
+  const user = JSON.parse(localStorage.getItem("loggedInUser"));
+
   const fetchFeedbacks = async () => {
-    try {
-      const res = await fetch("https://feedbackbackend-pfzn.onrender.com/api/data");
-      const data = await res.json();
-      setFeedbacks(data);
-    } catch (err) {
-      console.error(err);
-    }
+    const res = await fetch("https://feedbackbackend-pfzn.onrender.com/api/data");
+    const data = await res.json();
+    setFeedbacks(data.filter(f => f.userId === user._id));
   };
 
-  useEffect(() => {
-    fetchFeedbacks();
-  }, []);
+  useEffect(() => { fetchFeedbacks(); }, []);
+
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!name || !newFeedback || !newComment) return;
+    const url = editingId ? `https://feedbackbackend-pfzn.onrender.com/api/data/${editingId}` : "http://localhost:4500/api/data";
+    const method = editingId ? "PUT" : "POST";
 
     try {
-      if (editingId) {
-        const res = await fetch(`https://feedbackbackend-pfzn.onrender.com/api/data/${editingId}`, {
-          method: "PUT",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ name, feedback: newFeedback, comment: newComment }),
-        });
-        const data = await res.json();
-        alert(data.message);
-        setEditingId(null);
-      } else {
-        const res = await fetch("https://feedbackbackend-pfzn.onrender.com/api/data", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ name, feedback: newFeedback, comment: newComment }),
-        });
-        const data = await res.json();
-        alert(data.message);
-      }
-      setName("");
-      setNewFeedback("");
-      setNewComment("");
-      fetchFeedbacks();
-    } catch (err) {
-      console.error(err);
-    }
-  };
-  const handleDelete = async (id) => {
-    if (!window.confirm("Delete this feedback?")) return;
-    try {
-      const res = await fetch(`https://feedbackbackend-pfzn.onrender.com/api/data/${id}`, { method: "DELETE" });
-      const data = await res.json();
-      alert(data.message);
-      fetchFeedbacks();
-    } catch (err) {
-      console.error(err);
-    }
-  };
-  const handleEdit = (fb) => {
-    setEditingId(fb._id);
-    setName(fb.name);
-    setNewFeedback(fb.feedback);
-    setNewComment(fb.comment);
-  };
-  const handleReply = (fb) => {
-    setReplyId(fb._id);
-    setNewReply(fb.reply || "");
-  };
-  const saveReply = async () => {
-    try {
-      const res = await fetch(`https://feedbackbackend-pfzn.onrender.com/api/data/${replyId}/reply`, {
-        method: "PUT",
+      const res = await fetch(url, {
+        method,
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ reply: newReply }),
+        body: JSON.stringify({ name, feedback, comment, userId: user._id }),
       });
       const data = await res.json();
+      if (!res.ok) return alert(data.message);
       alert(data.message);
-      setReplyId(null);
-      setNewReply("");
+      setEditingId(null); setName(""); setFeedback(""); setComment("");
       fetchFeedbacks();
     } catch (err) {
       console.error(err);
+      alert("Error saving feedback");
     }
   };
-  const getFeedbackColor = (feedback) => {
-    switch (feedback.toLowerCase()) {
-      case "excellent": return { bg: "#d9fdd3", color: "green" };
-      case "very good": return { bg: "#d0ebff", color: "#0066cc" };
-      case "good": return { bg: "#fff9c4", color: "#b58900" };
-      case "average": return { bg: "#ffe5b4", color: "orange" };
-      case "poor":
-      case "bad": return { bg: "#ffd6d6", color: "red" };
-      default: return { bg: "#f2f2f2", color: "gray" };
-    }
+
+  const handleEdit = f => { setEditingId(f._id); setName(f.name); setFeedback(f.feedback); setComment(f.comment); };
+  const handleDelete = async fId => {
+    const res = await fetch(`https://feedbackbackend-pfzn.onrender.com/api/data/${fId}`, {
+      method: "DELETE",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ userId: user._id }),
+    });
+    const data = await res.json();
+    alert(data.message);
+    fetchFeedbacks();
   };
 
   return (
-    <div style={{ padding: "20px" }}>
-      <h2>User Feedback</h2>
-      <form onSubmit={handleSubmit} style={{ marginBottom: "20px", display: "flex", flexWrap: "wrap", gap: "10px" }}>
+    <div style={{ maxWidth: "600px", margin: "50px auto", padding: "20px", borderRadius: "12px", background: "#f8f9fa" }}>
+      <h2 style={{ textAlign: "center", color: "#007bff", marginBottom: "20px" }}>User Feedback</h2>
+
+      <form onSubmit={handleSubmit} style={{ display: "flex", flexDirection: "column", gap: "10px", marginBottom: "30px" }}>
         <input
-          type="text"
-          placeholder="Enter your name"
+          placeholder="Name"
           value={name}
-          onChange={(e) => setName(e.target.value)}
-          required
-          style={{ padding: "8px", flex: "1 1 200px" }}
+          onChange={e => setName(e.target.value)}
+          style={{ padding: "10px", borderRadius: "8px", border: "1px solid #ccc" }}
         />
+
         <select
-          value={newFeedback}
-          onChange={(e) => setNewFeedback(e.target.value)}
-          required
-          style={{ padding: "8px", flex: "1 1 200px" }}
+          value={feedback}
+          onChange={e => setFeedback(e.target.value)}
+          style={{ padding: "10px", borderRadius: "8px", border: "1px solid #ccc" }}
         >
           <option value="">Select feedback</option>
           <option value="Excellent">Excellent</option>
@@ -126,161 +76,73 @@ export default function Feedback() {
           <option value="Poor">Poor</option>
           <option value="Bad">Bad</option>
         </select>
+
         <input
-          type="text"
-          placeholder="Enter your comment"
-          value={newComment}
-          onChange={(e) => setNewComment(e.target.value)}
-          required
-          style={{ padding: "8px", flex: "2 1 300px" }}
+          placeholder="Comment"
+          value={comment}
+          onChange={e => setComment(e.target.value)}
+          style={{ padding: "10px", borderRadius: "8px", border: "1px solid #ccc" }}
         />
 
         <button
           type="submit"
           style={{
-            background: "#28a745",
-            color: "white",
-            border: "none",
+            padding: "10px",
             borderRadius: "8px",
-            padding: "8px 16px",
+            border: "none",
+            backgroundColor: "#007bff",
+            color: "#fff",
             cursor: "pointer",
           }}
         >
           {editingId ? "Update" : "Submit"}
         </button>
-
-        {editingId && (
-          <button
-            type="button"
-            onClick={() => {
-              setEditingId(null);
-              setName("");
-              setNewFeedback("");
-              setNewComment("");
-            }}
-            style={{
-              background: "#dc3545",
-              color: "white",
-              border: "none",
-              borderRadius: "8px",
-              padding: "8px 16px",
-              cursor: "pointer",
-            }}
-          >
-            Cancel
-          </button>
-        )}
       </form>
-      {feedbacks.length === 0 ? (
-        <p>No feedback submitted yet.</p>
-      ) : (
-        <table style={{ width: "100%", borderCollapse: "collapse" }}>
-          <thead>
-            <tr style={{ backgroundColor: "#007bff", color: "white" }}>
-              <th style={{ padding: "8px" }}>Name</th>
-              <th style={{ padding: "8px" }}>Feedback</th>
-              <th style={{ padding: "8px" }}>Comment</th>
-              <th style={{ padding: "8px" }}>Reply</th>
-              <th style={{ padding: "8px" }}>Action</th>
-            </tr>
-          </thead>
-          <tbody>
-            {feedbacks.map((fb) => {
-              const { bg, color } = getFeedbackColor(fb.feedback);
-              return (
-                <tr key={fb._id} style={{ backgroundColor: bg }}>
-                  <td style={{ padding: "8px" }}>{fb.name}</td>
-                  <td style={{ padding: "8px", color, fontWeight: "bold" }}>{fb.feedback}</td>
-                  <td style={{ padding: "8px" }}>{fb.comment}</td>
-                  <td style={{ padding: "8px" }}>
-                    {replyId === fb._id ? (
-                      <>
-                        <input
-                          value={newReply}
-                          onChange={(e) => setNewReply(e.target.value)}
-                          style={{ padding: "4px", marginRight: "4px" }}
-                        />
-                        <button
-                          onClick={saveReply}
-                          style={{
-                            background: "#17a2b8",
-                            color: "white",
-                            border: "none",
-                            borderRadius: "4px",
-                            padding: "4px 8px",
-                            cursor: "pointer",
-                          }}
-                        >
-                          Save
-                        </button>
-                        <button
-                          onClick={() => setReplyId(null)}
-                          style={{
-                            background: "#6c757d",
-                            color: "white",
-                            border: "none",
-                            borderRadius: "4px",
-                            padding: "4px 8px",
-                            marginLeft: "4px",
-                            cursor: "pointer",
-                          }}
-                        >
-                          Cancel
-                        </button>
-                      </>
-                    ) : (
-                      <span>{fb.reply || "-"}</span>
-                    )}
-                  </td>
-                  <td style={{ padding: "8px" }}>
-                    <button
-                      onClick={() => handleEdit(fb)}
-                      style={{
-                        background: "#007bff",
-                        color: "white",
-                        border: "none",
-                        borderRadius: "4px",
-                        padding: "4px 8px",
-                        marginRight: "4px",
-                        cursor: "pointer",
-                      }}
-                    >
-                      Edit
-                    </button>
-                    <button
-                      onClick={() => handleDelete(fb._id)}
-                      style={{
-                        background: "#f48766ff",
-                        color: "black",
-                        border: "none",
-                        borderRadius: "4px",
-                        padding: "4px 8px",
-                        marginRight: "4px",
-                        cursor: "pointer",
-                      }}
-                    >
-                      Delete
-                    </button>
-                    <button
-                      onClick={() => handleReply(fb)}
-                      style={{
-                        background: "#6c9bafff",
-                        color: "white",
-                        border: "none",
-                        borderRadius: "4px",
-                        padding: "4px 8px",
-                        cursor: "pointer",
-                      }}
-                    >
-                      Reply
-                    </button>
-                  </td>
-                </tr>
-              );
-            })}
-          </tbody>
-        </table>
-      )}
+
+      <h3 style={{ marginBottom: "15px", color: "#007bff" }}>Your Feedbacks</h3>
+
+      {feedbacks.map(f => (
+        <div key={f._id} style={{
+          border: "1px solid #ccc",
+          borderRadius: "10px",
+          padding: "15px",
+          marginBottom: "15px",
+          backgroundColor: "#fff",
+          boxShadow: "0 2px 6px rgba(0,0,0,0.1)"
+        }}>
+          <p style={{ fontWeight: "bold", marginBottom: "5px" }}>{f.name} - <span style={{ color: "#555" }}>{f.feedback}</span></p>
+          <p style={{ marginBottom: "10px" }}>{f.comment}</p>
+          <div style={{ display: "flex", gap: "10px" }}>
+            <button
+              onClick={() => handleEdit(f)}
+              style={{
+                padding: "6px 12px",
+                backgroundColor: "#28a745",
+                color: "#fff",
+                border: "none",
+                borderRadius: "5px",
+                cursor: "pointer"
+              }}
+            >
+              Edit
+            </button>
+            <button
+              onClick={() => handleDelete(f._id)}
+              style={{
+                padding: "6px 12px",
+                backgroundColor: "#dc3545",
+                color: "#fff",
+                border: "none",
+                borderRadius: "5px",
+                cursor: "pointer"
+              }}
+            >
+              Delete
+            </button>
+          </div>
+        </div>
+      ))}
     </div>
   );
 }
+
