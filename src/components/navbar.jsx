@@ -1,26 +1,32 @@
 import { Link, Outlet, useNavigate } from "react-router-dom";
 import { useState, useEffect } from "react";
-import "../App.css";
 
-function Navbar() {
+export default function Navbar() {
   const navigate = useNavigate();
-  const [user, setUser] = useState(null);
-  const checkUser = () => {
-    const loggedInUser = JSON.parse(localStorage.getItem("loggedInUser"));
-    setUser(loggedInUser);
-  };
+  const [user, setUser] = useState(() => {
+    try {
+      return JSON.parse(localStorage.getItem("loggedInUser"));
+    } catch {
+      return null;
+    }
+  });
 
   useEffect(() => {
-    checkUser();
-    window.addEventListener("storage", checkUser); 
-    return () => window.removeEventListener("storage", checkUser);
+    const handleStorageChange = () => {
+      try {
+        setUser(JSON.parse(localStorage.getItem("loggedInUser")));
+      } catch {
+        setUser(null);
+      }
+    };
+    window.addEventListener("storage", handleStorageChange);
+    return () => window.removeEventListener("storage", handleStorageChange);
   }, []);
 
   const handleLogout = () => {
     localStorage.removeItem("loggedInUser");
     setUser(null);
     navigate("/login");
-    window.dispatchEvent(new Event("storage")); 
   };
 
   return (
@@ -53,14 +59,20 @@ function Navbar() {
                 </>
               ) : (
                 <>
+                  {user.role === "user" && (
+                    <li className="nav-item">
+                      <Link className="nav-link" to="/user">User Dashboard</Link>
+                    </li>
+                  )}
+                  {user.role === "admin" && (
+                    <li className="nav-item">
+                      <Link className="nav-link" to="/admin">Admin Dashboard</Link>
+                    </li>
+                  )}
                   <li className="nav-item">
-                    <Link className="nav-link" to="/user">User</Link>
-                  </li>
-                  <li className="nav-item">
-                    <Link className="nav-link" to="/admin">Admin</Link>
-                  </li>
-                  <li className="nav-item">
-                    <button className="btn btn-link nav-link" onClick={handleLogout}>Logout</button>
+                    <button className="btn btn-link nav-link" onClick={handleLogout}>
+                      Logout
+                    </button>
                   </li>
                 </>
               )}
@@ -69,11 +81,8 @@ function Navbar() {
         </div>
       </nav>
 
-      <div className="main-content">
-        <Outlet />
-      </div>
+      <Outlet />
     </>
   );
 }
 
-export default Navbar;
