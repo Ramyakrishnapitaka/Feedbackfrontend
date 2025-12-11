@@ -14,7 +14,7 @@ export default function Signup() {
     setMessage("");
 
     try {
-      const res = await fetch("http://localhost:4500/api/signup", {
+      const res = await fetch("https://feedbackbackend-1-l4td.onrender.com/api/signup", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(form),
