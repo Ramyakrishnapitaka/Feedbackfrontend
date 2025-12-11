@@ -18,7 +18,7 @@ export default function Login() {
     onSubmit: async (values) => {
       setLoading(true);
       try {
-        const res = await fetch("http://localhost:4500/api/login", {
+        const res = await fetch("https://feedbackbackend-1-l4td.onrender.com/api/login", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify(values),
