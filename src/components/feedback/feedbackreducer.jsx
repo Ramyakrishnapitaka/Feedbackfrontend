@@ -10,7 +10,7 @@ export default function Feedback() {
   const user = JSON.parse(localStorage.getItem("loggedInUser"));
 
   const fetchFeedbacks = async () => {
-    const res = await fetch("https://feedbackbackend-pfzn.onrender.com/api/data");
+    const res = await fetch("https://feedbackbackend-1-l4td.onrender.com/api/data");
     const data = await res.json();
     setFeedbacks(data.filter(f => f.userId === user._id));
   };
@@ -19,7 +19,7 @@ export default function Feedback() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    const url = editingId ? `https://feedbackbackend-pfzn.onrender.com/api/data/${editingId}` : "http://localhost:4500/api/data";
+    const url = editingId ? `https://feedbackbackend-1-l4td.onrender.com/api/data/${editingId}` : "https://feedbackbackend-1-l4td.onrender.com/api/data";
     const method = editingId ? "PUT" : "POST";
 
     try {
@@ -41,7 +41,7 @@ export default function Feedback() {
 
   const handleEdit = f => { setEditingId(f._id); setName(f.name); setFeedback(f.feedback); setComment(f.comment); };
   const handleDelete = async fId => {
-    const res = await fetch(`https://feedbackbackend-pfzn.onrender.com/api/data/${fId}`, {
+    const res = await fetch(`https://feedbackbackend-1-l4td.onrender.com/api/data/${fId}`, {
       method: "DELETE",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ userId: user._id }),
