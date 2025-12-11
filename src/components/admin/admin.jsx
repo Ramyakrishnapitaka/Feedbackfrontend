@@ -8,7 +8,7 @@ export default function Admin() {
   const user = JSON.parse(localStorage.getItem("loggedInUser"));
 
   const fetchFeedbacks = async () => {
-    const res = await fetch("https://feedbackbackend-pfzn.onrender.com/api/data");
+    const res = await fetch("https://feedbackbackend-1-l4td.onrender.com/api/data");
     const data = await res.json();
     setFeedbacks(data);
   };
@@ -17,7 +17,7 @@ export default function Admin() {
 
   const handleReply = f => { setReplyId(f._id); setReplyText(f.reply || ""); };
   const saveReply = async () => {
-    const res = await fetch(`https://feedbackbackend-pfzn.onrender.com/api/data/${replyId}/reply`, {
+    const res = await fetch(`https://feedbackbackend-1-l4td.onrender.com/api/data/${replyId}/reply`, {
       method: "PUT",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ reply: replyText, userId: user._id }),
@@ -29,7 +29,7 @@ export default function Admin() {
   };
 
   const handleDelete = async fId => {
-    const res = await fetch(`https://feedbackbackend-pfzn.onrender.com/api/data/${fId}`, {
+    const res = await fetch(`https://feedbackbackend-1-l4td.onrender.com/api/data/${fId}`, {
       method: "DELETE",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ userId: user._id }),
